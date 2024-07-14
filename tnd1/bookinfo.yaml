@@ -1,0 +1,120 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bookinfo
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+spec:
+  destination:
+    namespace: aposdev
+    server: {{ .Values.spec.destination.server }}
+  project: apos-project
+  source:
+    repoURL: {{ .Values.spec.source.appHelmRepoURL }}
+    targetRevision: {{ .Values.spec.source.appHelmRepoTargetRevision }}
+    path: apos-spring-app-deployment
+    syncPolicy:
+      automated:
+        prune: true
+    helm:
+      releaseName: aposconfigserver
+      valuesObject:
+        replicaCount: 1
+        image:
+          repository: docker.io/istio/examples-bookinfo-details-v1
+          pullPolicy: IfNotPresent
+          tag: 1.19.1
+        nameOverride: "aposconfigserver"
+        fullnameOverride: "aposconfigserver-dev1"
+        serviceAccount:
+          # Specifies whether a service account should be created
+          create: true
+          # Annotations to add to the service account
+          annotations: {}
+          name: ""
+        podAnnotations: {}
+        podSecurityContext: {}
+        # fsGroup: 2000
+
+        securityContext: {}
+
+
+        service:
+          type: ClusterIP
+          port: 80
+        ingress:
+          enabled: true
+          className: "nginx"
+          annotations: {}
+          kubernetes.io/ingress.class: nginx
+          hosts:
+            - host: aposconfigserver.dev1.prs
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+          tls: []
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          - name: actuator
+            containerPort: 9090
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: actuator
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 25
+          successThreshold: 1
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: actuator
+          failureThreshold: 10
+          initialDelaySeconds: 5
+          periodSeconds: 25
+          successThreshold: 1
+          timeoutSeconds: 10
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: dev
+          - name: SPRING_CLOUD_CONSUL_HOST
+            value: http://consul.dev1.prs
+          - name: SPRING_CLOUD_CONSUL_PORT
+            value: "80"
+          - name: SPRING_CLOUD_CONGIG_SERVER_GIT_URI
+            value: https://git.apos.in/APOS/AppConfig.git
+          - name: SPRING_CLOUD_CONGIG_SERVER_GIT_USERNAME
+            value:
+          - name: SPRING_CLOUD_CONGIG_SERVER_GIT_PASSWORD
+            value:
+          - name: SPRING_APPLICATION_ENV
+            value: dev1
+          - name: SERVER_PORT
+            value: "8080"
+          - name: MANAGEMENT_SERVER_PORT
+            value: "9090"
+          - name: SPRING_RABBITMQ_HOST
+            value: rabbitmq.rabbitmq.svc.dev1.k8s.prs
+          - name: SPRING_RABBITMQ_PORT
+            value: "5672"
+          - name: SPRING_RABBITMQ_USERNAME
+            value: rabbitmq
+          - name: SPRING_RABBITMQ_PASSWORD
+            value: rabbitmq
+        resources: {}
+
+        autoscaling:
+          enabled: false
+          minReplicas: 1
+          maxReplicas: 100
+          targetCPUUtilizationPercentage: 80
+          # targetMemoryUtilizationPercentage: 80
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+        
+
