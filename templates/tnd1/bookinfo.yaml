@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
   destination:
-    namespace: aposdev
+    namespace: openshift-gitops
     server: {{ .Values.spec.destination.server }}
   project: apos-project
   source:
