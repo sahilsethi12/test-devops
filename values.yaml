@@ -3,5 +3,5 @@ spec:
     server: https://kubernetes.default.svc
   source:
     argocdRepoURL: https://github.com/sahilsethi12/test-devops.git
-    appHelmRepoURL: https://github.com/sahilsethi12/test-devops.git
+    appHelmRepoURL: https://github.com/sahilsethi12/helmrepo.git
     appHelmRepoTargetRevision: master
