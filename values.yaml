@@ -1,0 +1,7 @@
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  source:
+    argocdRepoURL: https://git.prs/APOS/ArgoCICD.git
+    appHelmRepoURL: https://git.prs/APOS/apos-helm-charts.git
+    appHelmRepoTargetRevision: main
